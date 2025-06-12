@@ -29,7 +29,7 @@ while True:
         lf_im[:,int(p_width*i)+offset,:] = 255
         lf_im[int(p_width*i)+offset,:,:] = 255
     
-    plt.imshow(lf_im)
+    plt.imshow(cv2.cvtColor(lf_im, cv2.COLOR_BGR2RGB))
     plt.show()
 
 if entered:
