@@ -16,14 +16,14 @@ for i in range(light_field_d):
 
 u_center = (light_field_d) / 2.0
 v_center = (light_field_d) / 2.0
-alpha_min = float(input("alpha min: "))
-alpha_max = float(input("alpha max: "))
-alpha_num = int(input("alpha num: "))
-alphas = np.linspace(alpha_min, alpha_max, alpha_num)
+alpha_inv_min = float(input("alpha_inv min: "))
+alpha_inv_max = float(input("alpha_inv max: "))
+alpha_inv_num = int(input("alpha_inv num: "))
+alpha_invs = np.linspace(alpha_inv_min, alpha_inv_max, alpha_inv_num)
 # -0.5 0.8 80
 
 cnt = 0
-for alpha in alphas:
+for alpha_inv in alpha_invs:
     refocused_image = np.zeros((N, N, 3), dtype=np.float32)
     image_count = 0
     for u in range(light_field_d):
@@ -31,8 +31,8 @@ for alpha in alphas:
             print(f"processing refocused image {cnt}: ({u}, {v})  ", end='\r')
             current_image = lf_imgs[u][v]
             # shift
-            shift_x = alpha * (u - u_center)
-            shift_y = alpha * (v - v_center)
+            shift_x = alpha_inv * (u - u_center)
+            shift_y = alpha_inv * (v - v_center)
             M = np.float32([[1, 0, shift_y],
                             [0, 1, shift_x]])
 
@@ -48,5 +48,5 @@ for alpha in alphas:
     refocused_image /= image_count
 
     refocused_image_uint8 = np.clip(refocused_image, 0, 255).astype(np.uint8)
-    cv2.imwrite(os.path.join(save_dir,f"{cnt}_refocused_{alpha}.png"), refocused_image_uint8)
+    cv2.imwrite(os.path.join(save_dir,f"{cnt}_refocused_{alpha_inv}.png"), refocused_image_uint8)
     cnt += 1
