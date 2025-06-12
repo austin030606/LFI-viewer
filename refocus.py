@@ -1,0 +1,52 @@
+import os
+import cv2
+import numpy as np
+from matplotlib import pyplot as plt
+from tkinter import filedialog
+
+lf_images_dir = filedialog.askdirectory(title='select processed lightfield images directory')
+save_dir = filedialog.askdirectory(title='select save directory')
+N = int(input("N: "))
+light_field_d = int(input("light_field_d: "))
+
+lf_imgs = [[None for _ in range(light_field_d)] for _ in range(light_field_d)]
+for i in range(light_field_d):
+    for j in range(light_field_d):
+        lf_imgs[i][j] = cv2.imread(os.path.join(lf_images_dir, f"image_{i}_{j}.png")).astype(np.float32)
+
+u_center = (light_field_d) / 2.0
+v_center = (light_field_d) / 2.0
+alpha_min = float(input("alpha min: "))
+alpha_max = float(input("alpha max: "))
+alpha_num = int(input("alpha num: "))
+alphas = np.linspace(alpha_min, alpha_max, alpha_num)
+# -0.5 0.8 80
+
+cnt = 0
+for alpha in alphas:
+    refocused_image = np.zeros((N, N, 3), dtype=np.float32)
+    image_count = 0
+    for u in range(light_field_d):
+        for v in range(light_field_d):
+            print(f"processing refocused image {cnt}: ({u}, {v})  ", end='\r')
+            current_image = lf_imgs[u][v]
+            # shift
+            shift_x = alpha * (u - u_center)
+            shift_y = alpha * (v - v_center)
+            M = np.float32([[1, 0, shift_y],
+                            [0, 1, shift_x]])
+
+            shifted_image = cv2.warpAffine(current_image, M, (N, N),
+                                            flags=cv2.INTER_LINEAR,
+                                            borderMode=cv2.BORDER_CONSTANT,
+                                            borderValue=0)
+
+            # and sum
+            refocused_image += shifted_image.astype(np.float32)
+            image_count += 1
+
+    refocused_image /= image_count
+
+    refocused_image_uint8 = np.clip(refocused_image, 0, 255).astype(np.uint8)
+    cv2.imwrite(os.path.join(save_dir,f"{cnt}_refocused_{alpha}.png"), refocused_image_uint8)
+    cnt += 1
