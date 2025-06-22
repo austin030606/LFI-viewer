@@ -28,6 +28,8 @@ for alpha_inv in alpha_invs:
     image_count = 0
     for u in range(light_field_d):
         for v in range(light_field_d):
+            if (u-(light_field_d+1)//2)**2 + (v-(light_field_d+1)//2)**2 > ((light_field_d+1)//2)**2:
+                continue
             print(f"processing refocused image {cnt}: ({u}, {v})  ", end='\r')
             current_image = lf_imgs[u][v]
             # shift
